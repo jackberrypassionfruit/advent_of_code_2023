@@ -35,13 +35,12 @@ def get_part_numbers_ints_w_coords(input: str) -> list:
             
     return part_numbers_ints_w_coords
 
-def add_perimeter_chars(part_numbers_ints_w_coords):
+def add_perimeter_symbol_coords(part_numbers_ints_w_coords):
     x_min, x_max = 0, len(schematic[0]) - 1
     y_min, y_max = 0, len(schematic) - 1
 
     for digit_index, digit_dict in enumerate(part_numbers_ints_w_coords):
-        perimeter_coords = set()
-        perimeter_chars = set()
+        perimeter_symbol_coords = set()
         for coord in digit_dict['coords']:
             x_coord, y_coord = coord
             for dx in range(-1, 1+1):
@@ -49,22 +48,36 @@ def add_perimeter_chars(part_numbers_ints_w_coords):
                     this_coord_x, this_coords_y = x_coord+dx, y_coord+dy
                     if (this_coord_x, this_coords_y) not in digit_dict['coords'] and\
                         x_min <= x_coord+dx <= x_max and\
-                        y_min <= y_coord+dy <= y_max:
-                        # perimeter_coords.add((this_coord_x, this_coords_y))
-                        perimeter_chars.add(schematic[this_coords_y][this_coord_x])
-        perimeter_coords = sorted(list(perimeter_coords))
-        # part_numbers_ints_w_coords[digit_index]['perimeter_coords'] = perimeter_coords
-        part_numbers_ints_w_coords[digit_index]['perimeter_chars'] = perimeter_chars
-
+                        y_min <= y_coord+dy <= y_max and\
+                        schematic[this_coords_y][this_coord_x] == '*':
+                            
+                        perimeter_symbol_coords.add((this_coord_x, this_coords_y))
+                        
+        part_numbers_ints_w_coords[digit_index]['perimeter_symbol_coords'] = perimeter_symbol_coords
 
 part_numbers_ints_w_coords = get_part_numbers_ints_w_coords(schematic)   
-add_perimeter_chars(part_numbers_ints_w_coords)
+add_perimeter_symbol_coords(part_numbers_ints_w_coords)
 
-part_numbers_ints_w_coords = [pn for pn in part_numbers_ints_w_coords if pn['perimeter_chars'] != set({'.'})]
+        
+# for digit_dict in part_numbers_ints_w_coords:
+# # for digit_dict in [pn for pn in part_numbers_ints_w_coords if len(pn['perimeter_symbol_coords']) > 1]:
+#     print(digit_dict)
 
 
-# for digit in part_numbers_ints_w_coords:
-#     print(digit)
+paired_gears = set()
+for digit_dict in part_numbers_ints_w_coords:
+    gear_buddies = [pn for pn in part_numbers_ints_w_coords if digit_dict is not pn and pn['perimeter_symbol_coords'] == digit_dict['perimeter_symbol_coords']]
+    if len(gear_buddies) > 0:
+        if gear_buddies[0]['perimeter_symbol_coords'] != set():
+    #         x, y = list(gear_buddies[0]['perimeter_symbol_coords'])[0]
+    #         if schematic[y][x] != '.':
+    #             paired_gears.add(tuple(sorted([digit_dict['digit'], gear_buddies[0]['digit']])))
+            paired_gears.add(tuple(sorted([digit_dict['digit'], gear_buddies[0]['digit']])))
+
+print(paired_gears)
+
     
-pn_sum = sum([pn['digit'] for pn in part_numbers_ints_w_coords])
-print(f'{pn_sum=}')
+sum_gear_ratios = sum([pair[0]*pair[1] for pair in paired_gears])
+
+print(f'{sum_gear_ratios=}')
+# 84211374/5 too low
